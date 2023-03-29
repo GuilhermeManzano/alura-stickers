@@ -10,28 +10,50 @@ public class GeradorDeFigurinha {
 
     public static void gerarFigurinha(Movie movie) {
         try {
-            InputStream inputStream = new URL(movie.getImage()).openStream();
-            BufferedImage imagemOriginal = ImageIO.read(inputStream);
+            BufferedImage oldImage = getImage(movie);
+            BufferedImage newImage = convertImage(oldImage);
 
-            int largura = imagemOriginal.getWidth();
-            int altura = imagemOriginal.getHeight();
-            int novaAltura = altura + 200;
-            BufferedImage novaImagem = new BufferedImage(largura, novaAltura, BufferedImage.TRANSLUCENT);
+            drawImage(oldImage, newImage);
 
-            Graphics2D graphics = (Graphics2D) novaImagem.getGraphics();
-            graphics.drawImage(imagemOriginal, 0, 0, null);
-
-            var fonte = new Font(Font.SANS_SERIF, Font.BOLD, 64);
-            graphics.setColor(Color.RED);
-            graphics.setFont(fonte);
-
-            graphics.drawString("TOPZERA", 200, novaAltura - 100);
-
-            String regex = movie.getTitle().split(":")[0];
-            String createFileSticker = String.format("src/saida/%s.png", regex);
-            ImageIO.write(novaImagem, "png", new File(createFileSticker));
+            generateImageFile(movie, newImage);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static BufferedImage getImage(Movie movie) throws IOException {
+        InputStream inputStream = new URL(movie.getImage()).openStream();
+
+        return ImageIO.read(inputStream);
+    }
+
+    private static BufferedImage convertImage(BufferedImage image) {
+        int largura = image.getWidth();
+        int altura = image.getHeight();
+        int novaAltura = altura + 200;
+
+        return new BufferedImage(largura, novaAltura, BufferedImage.TRANSLUCENT);
+    }
+
+    private static void drawImage(BufferedImage oldImage, BufferedImage newImage) {
+        Graphics2D graphics = (Graphics2D) newImage.getGraphics();
+        graphics.drawImage(newImage, 0, 0, null);
+
+        createImageText(graphics, oldImage);
+    }
+
+    private static void createImageText(Graphics2D graphics, BufferedImage oldImage) {
+        var fonte = new Font(Font.SANS_SERIF, Font.BOLD, 64);
+        graphics.setColor(Color.RED);
+        graphics.setFont(fonte);
+
+        graphics.drawString("TOPZERA", 200, oldImage.getHeight() - 100);
+    }
+
+    private static void generateImageFile(Movie movie, BufferedImage newImage) throws IOException {
+        String regex = movie.getTitle().split(":")[0];
+        String createFileSticker = String.format("src/saida/%s.png", regex);
+
+        ImageIO.write(newImage, "png", new File(createFileSticker));
     }
 }
